@@ -1,4 +1,4 @@
-/* TileLink — charge config.yaml, rend la grille de tuiles. Zero dépendance. */
+/* TileLink — loads config.yaml, renders the tile grid. Zero dependencies. */
 (function () {
   "use strict";
 
@@ -14,10 +14,10 @@
   var countEl = document.getElementById("count");
   var chipsEl = document.getElementById("chips");
   var allLinks = [];
-  var activeCategory = null; // null = Tout / All
+  var activeCategory = null; // null = All
   function otherCat() { return t("other"); }
 
-  // ---------- Admin (équipe admin : écriture via token) ----------
+  // ---------- Admin (admin team: writes via token) ----------
   var adminBtn = document.getElementById("admin-toggle");
   var adminToken = null;
   try { adminToken = sessionStorage.getItem("tilelink-admin"); } catch (e) {}
@@ -49,7 +49,7 @@
     });
   }
 
-  // ---------- Langue FR/EN (préférence par navigateur) ----------
+  // ---------- FR/EN language (per-browser preference) ----------
   var I18N = {
     fr: {
       langBtn: "EN", langTitle: "Switch to English",
@@ -140,7 +140,7 @@
       errPrefix: "Error: "
     }
   };
-  // Drapeaux SVG (bouton de langue : affiche la langue cible)
+  // SVG flags (language button: shows the target language)
   var FLAG_FR = '<svg viewBox="0 0 3 2" width="22" height="15" aria-hidden="true"><rect width="1" height="2" x="0" fill="#0055A4"/><rect width="1" height="2" x="1" fill="#ffffff"/><rect width="1" height="2" x="2" fill="#EF4135"/></svg>';
   var FLAG_GB = '<svg viewBox="0 0 60 30" width="22" height="15" aria-hidden="true"><rect width="60" height="30" fill="#012169"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#ffffff" stroke-width="6"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#C8102E" stroke-width="2"/><path d="M30,0 V30 M0,15 H60" stroke="#ffffff" stroke-width="10"/><path d="M30,0 V30 M0,15 H60" stroke="#C8102E" stroke-width="6"/></svg>';
   var lang = "fr";
@@ -156,7 +156,7 @@
     }
     return s;
   }
-  // Remplace le texte d'un <label> (nœud texte avant l'input)
+  // Replace a <label> text (text node before the input)
   function setLabelText(inputEl, text) {
     var lab = inputEl.closest("label");
     if (lab && lab.firstChild) lab.firstChild.textContent = text;
@@ -181,7 +181,7 @@
     setTheme(cur === "dark" ? "light" : "dark");
   });
 
-  // ---------- Taille des tuiles (réglage utilisateur, par navigateur) ----------
+  // ---------- Tile size (user setting, per browser) ----------
   var userModal = document.getElementById("user-modal");
   function setTileSize(s) {
     if (s !== "compact") s = "large";
@@ -204,7 +204,7 @@
     r.addEventListener("change", function () { setTileSize(r.value); });
   });
 
-  // ---------- Branding (réglage admin : logo, titre, sous-titre) ----------
+  // ---------- Branding (admin setting: logo, title, subtitle) ----------
   var brandBtn = document.getElementById("brand-btn");
   var brandModal = document.getElementById("brand-modal");
   var bTitle = document.getElementById("b-title");
@@ -353,8 +353,8 @@
       });
   });
 
-  // ---------- Mini parseur YAML (sous-ensemble supporte par config.yaml) ----------
-  // Supporte : title:, subtitle:, theme:, links: puis "- name:/url:/icon:/category:/env:" (+ "..." ou '...')
+  // ---------- Mini YAML parser (subset supported by config.yaml) ----------
+  // Supports: title:, subtitle:, theme:, links: then "- name:/url:/icon:/category:/env:" (+ "..." or '...')
   function stripQuotes(s) {
     s = s.trim();
     if (s.length >= 2 && ((s[0] === '"' && s[s.length - 1] === '"') || (s[0] === "'" && s[s.length - 1] === "'"))) {
@@ -381,7 +381,7 @@
         continue;
       }
       if (!inLinks) continue;
-      // Nouvel item "- ..."
+      // New "- ..." item
       var dash = trimmed.match(/^-\s*(.*)$/);
       if (dash) {
         if (current) cfg.links.push(current);
@@ -399,12 +399,12 @@
       }
     }
     if (current) cfg.links.push(current);
-    // Nettoie les items incomplets
+    // Drop incomplete items
     cfg.links = cfg.links.filter(function (l) { return l && l.name && l.url; });
     return cfg;
   }
 
-  // ---------- Icones ----------
+  // ---------- Icons ----------
   function isDirectUrl(icon) {
     return /^(https?:\/\/|\/|\.\/|icons\/)/i.test(icon);
   }
@@ -452,7 +452,7 @@
     return box;
   }
 
-  // ---------- Rendu + recherche + categories ----------
+  // ---------- Render + search + categories ----------
   function norm(s) {
     return (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   }
@@ -593,7 +593,7 @@
     });
   }
 
-  // ---------- Chargement : config.yaml (main) + custom.json via API (UI) ----------
+  // ---------- Load: config.yaml (hand-managed) + custom.json via API (UI) ----------
   function loadData() {
     return fetch("config.yaml", { cache: "no-store" })
       .then(function (r) {
@@ -643,7 +643,7 @@
       });
   }
 
-  // ---------- Modale d'ajout (équipe admin) ----------
+  // ---------- Add modal (admin team) ----------
   var modal = document.getElementById("modal");
   var fPass = document.getElementById("f-pass");
   var passWrap = document.getElementById("pass-wrap");
@@ -656,8 +656,8 @@
   var formError = document.getElementById("form-error");
   var preview = document.getElementById("icon-preview");
   var modalTitle = document.getElementById("modal-title");
-  var pendingDataUrl = null; // PNG 256px prêt à uploader
-  var editingId = null; // null = création, sinon id de la tuile modifiée
+  var pendingDataUrl = null; // 256px PNG ready to upload
+  var editingId = null; // null = create, else edited tile id
 
   function resetForm() {
     fPass.value = ""; fName.value = ""; fUrl.value = ""; fIcon.value = "";
@@ -715,7 +715,7 @@
       preview.appendChild(fb);
     }
   }
-  // Aperçu d'une valeur d'icône (slug/URL) avec bascule SVG->PNG comme les tuiles
+  // Preview of an icon value (slug/URL) with SVG->PNG fallback like tiles
   function previewIconValue(v, name) {
     v = (v || "").trim();
     if (!v) { setPreview(null, name); return; }
@@ -733,7 +733,7 @@
     img.src = cands[0];
     preview.appendChild(img);
   }
-  // Icône texte (slug/URL) -> aperçu live
+  // Text icon (slug/URL) -> live preview
   fIcon.addEventListener("input", function () {
     if (pendingDataUrl) return;
     previewIconValue(fIcon.value, fName.value);
@@ -741,7 +741,7 @@
   fName.addEventListener("input", function () {
     if (!fIcon.value.trim() && !pendingDataUrl) setPreview(null, fName.value);
   });
-  // Fichier -> redimensionne en 256x256 PNG (contain sur fond transparent)
+  // File -> resize to 256x256 PNG (contain on transparent background)
   fFile.addEventListener("change", function () {
     pendingDataUrl = null;
     var file = fFile.files && fFile.files[0];
@@ -816,7 +816,7 @@
           name: name, url: url, icon: iconPath || "",
           category: fCat.value.trim(), env: fEnv.value,
         };
-        // Création (POST) ou modification (PUT) selon le mode de la modale
+        // Create (POST) or update (PUT) depending on modal mode
         return editingId
           ? sendApi("PUT", "/api/links/" + encodeURIComponent(editingId), payload)
           : sendApi("POST", "/api/links", payload);
@@ -843,8 +843,8 @@
     adminBtn.textContent = "\uD83D\uDD13";
     adminBtn.classList.add("unlocked");
   }
-  // ---------- Toggle admin : cadenas = verrouiller / déverrouiller uniquement ----------
-  // (l'ajout passe par le bouton « ＋ Ajouter »)
+  // ---------- Admin toggle: lock = lock/unlock only ----------
+  // (adding goes through the "＋ Add" button)
   var unlockModal = document.getElementById("unlock");
   var uPass = document.getElementById("u-pass");
   var uError = document.getElementById("u-error");
@@ -878,11 +878,11 @@
   uPass.addEventListener("keydown", function (e) { if (e.key === "Enter") submitUnlock(); });
   unlockModal.addEventListener("click", function (e) { if (e.target === unlockModal) closeUnlock(); });
   adminBtn.addEventListener("click", function () {
-    if (adminToken) setAdmin(false); // verrouille, masque ✎/×
-    else openUnlock(); // déverrouille, réaffiche ✎/×
+    if (adminToken) setAdmin(false); // lock, hide ✎/×
+    else openUnlock(); // unlock, show ✎/× again
   });
 
-  // ---------- Langue : applique tous les intitulés ----------
+  // ---------- Language: apply all labels ----------
   var langBtn = document.getElementById("lang-toggle");
   function setHint(inputEl, html) {
     var lab = inputEl.closest("label");
@@ -903,14 +903,14 @@
     emptyEl.innerHTML = t("emptyHtml");
     noresultsEl.firstChild.textContent = t("noResults");
     clearBtn.textContent = t("clearSearch");
-    // Déverrouillage admin
+    // Admin unlock
     document.getElementById("unlock-title").textContent = t("unlockTitle");
     unlockModal.querySelector(".unlock-text").textContent = t("unlockText");
     setLabelText(uPass, t("passLabel"));
     uPass.placeholder = t("passPh");
     document.getElementById("u-cancel").textContent = t("cancel");
     document.getElementById("u-ok").textContent = t("unlock");
-    // Modale ajout/édition
+    // Add/edit modal
     modalTitle.textContent = editingId ? t("editTile") : t("newTile");
     setLabelText(fPass, t("passLabelAdd"));
     fPass.placeholder = t("passPh");
@@ -928,7 +928,7 @@
     document.getElementById("modal-cancel").textContent = t("cancel");
     var addSave = document.getElementById("modal-save");
     if (!addSave.disabled) addSave.textContent = t("save");
-    // Préférences d'affichage
+    // Display preferences
     document.getElementById("user-title").textContent = t("userTitle");
     userModal.querySelector(".unlock-text").textContent = t("userText");
     var radios = userModal.querySelectorAll('input[name="tilesize"]');
@@ -937,7 +937,7 @@
     });
     userModal.querySelector(".hint").innerHTML = t("sizeHintHtml");
     document.getElementById("user-close").textContent = t("close");
-    // Personnalisation (admin)
+    // Branding (admin)
     document.getElementById("brand-title").textContent = t("brandModalTitle");
     brandModal.querySelector(".unlock-text").innerHTML = t("brandTextHtml");
     setLabelText(bTitle, t("bTitleLabel"));
@@ -951,7 +951,7 @@
     document.getElementById("brand-cancel").textContent = t("cancel");
     var brandSave = document.getElementById("brand-save");
     if (!brandSave.disabled) brandSave.textContent = t("save");
-    // Listes (chips « Tout/Autres » dépendent de la langue)
+    // Lists ("All/Others" chips depend on language)
     renderChips();
     applyFilters();
   }

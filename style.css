@@ -83,7 +83,7 @@ h1 { font-size: 1.4rem; margin: 0; letter-spacing: -.01em; }
   flex: 1;
 }
 
-/* Barre de recherche */
+/* Search bar */
 .toolbar {
   display: flex;
   align-items: center;
@@ -140,7 +140,7 @@ h1 { font-size: 1.4rem; margin: 0; letter-spacing: -.01em; }
   text-decoration: underline;
 }
 
-/* Filtres par categorie */
+/* Category filters */
 .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
 .chips:empty { display: none; }
 .chip {
@@ -156,9 +156,9 @@ h1 { font-size: 1.4rem; margin: 0; letter-spacing: -.01em; }
 .chip:hover { color: var(--text); border-color: var(--accent); }
 .chip.active { color: #fff; background: var(--accent); border-color: var(--accent); }
 
-/* Tuile positionnée (badge env + bouton supprimer absolus) */
+/* Positioned tile (absolute env badge + delete button) */
 .tile { position: relative; }
-/* Bouton supprimer (tuiles custom, mode admin uniquement) */
+/* Delete button (custom tiles, admin mode only) */
 .tile-del {
   display: none;
   position: absolute;
@@ -193,7 +193,7 @@ h1 { font-size: 1.4rem; margin: 0; letter-spacing: -.01em; }
 .tile-edit:hover { color: var(--accent); border-color: var(--accent); }
 body.admin .tile-del.custom, body.admin .tile-edit.custom { display: block; }
 
-/* Modale d'ajout */
+/* Add modal */
 .modal {
   position: fixed;
   inset: 0;
@@ -270,14 +270,14 @@ body.admin .tile-del.custom, body.admin .tile-edit.custom { display: block; }
 [data-theme="light"] .tile-badge.env-recette { color: #c2410c; }
 [data-theme="light"] .tile-badge.env-dev { color: #1d4ed8; }
 
-/* Grille responsive : auto-fill => nb colonnes s'adapte, lignes suivent */
+/* Responsive grid: auto-fill => column count adapts, rows follow */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(var(--tile-size), 1fr));
   gap: 16px;
 }
 
-/* Tuile cliquable */
+/* Clickable tile */
 .tile {
   display: flex;
   flex-direction: column;
@@ -323,7 +323,7 @@ body.admin .tile-del.custom, body.admin .tile-edit.custom { display: block; }
   text-transform: uppercase;
 }
 
-/* Nom sous l'icone, petite police, wrap sur 2 lignes max */
+/* Name under the icon, small font, 2-line wrap max */
 .tile-name {
   font-size: .82rem;
   line-height: 1.25;
@@ -334,7 +334,7 @@ body.admin .tile-del.custom, body.admin .tile-edit.custom { display: block; }
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  min-height: 2.05em; /* aligne les tuiles même si 1 ligne */
+  min-height: 2.05em; /* align tiles even with 1 line */
 }
 
 .empty, .error { color: var(--muted); text-align: center; margin-top: 40px; }
@@ -349,7 +349,7 @@ code { background: var(--card); padding: 2px 6px; border-radius: 6px; }
   border-top: 1px solid var(--border);
 }
 
-/* Petit écran : tuiles un peu plus compactes */
+/* Small screens: slightly more compact tiles */
 @media (max-width: 480px) {
   :root { --tile-size: 104px; }
   .tile-icon { width: 52px; height: 52px; }
@@ -357,7 +357,7 @@ code { background: var(--card); padding: 2px 6px; border-radius: 6px; }
   .tile-name { font-size: .76rem; }
 }
 
-/* Taille compacte (réglage utilisateur) : noms sur 2 lignes conservés */
+/* Compact size (user setting): 2-line names preserved */
 [data-tilesize="compact"] { --tile-size: 92px; }
 [data-tilesize="compact"] .tile { padding: 12px 6px 10px; min-height: 116px; gap: 8px; }
 [data-tilesize="compact"] .tile-icon { width: 44px; height: 44px; border-radius: 10px; }
@@ -365,7 +365,7 @@ code { background: var(--card); padding: 2px 6px; border-radius: 6px; }
 [data-tilesize="compact"] .tile-fallback { font-size: 1rem; }
 [data-tilesize="compact"] .tile-name { font-size: .7rem; line-height: 1.2; }
 
-/* Réglage utilisateur : radios */
+/* User setting: radios */
 .radio-row { display: flex; gap: 16px; margin-bottom: 12px; }
 .radio-row label { display: flex; align-items: center; gap: 6px; font-size: .9rem; cursor: pointer; }
 .hint { font-size: .78rem; color: var(--muted); margin: 0 0 12px; }

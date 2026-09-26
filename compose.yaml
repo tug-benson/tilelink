@@ -7,15 +7,15 @@ services:
     ports:
       - "8080:80"
     environment:
-      # Mot de passe partagé de l'équipe admin (ajout/suppression de tuiles via l'UI).
-      # Lecture publique : les viewers n'en ont pas besoin.
-      # Changez-le ! ex. dans un fichier .env : ADMIN_TOKEN=mot-de-passe-solide
+      # Shared admin-team password (add/remove tiles via the UI).
+      # Public read: viewers don't need it.
+      # Change it! e.g. in an .env file: ADMIN_TOKEN=a-strong-password
       - PORT=80
       - ADMIN_TOKEN=${ADMIN_TOKEN:-changeme}
     volumes:
-      # Édition manuelle possible (relecture à chaque refresh, no-cache).
+      # Manual editing possible (re-read on every refresh, no-cache).
       - ./config.yaml:/app/config.yaml:ro
-      # Tuiles créées via l'UI (écrites par le backend — ne pas mettre :ro).
+      # UI-created tiles (written by the backend — don't set :ro).
       - ./custom.json:/app/custom.json
-      # Icônes locales + uploads (référencez via "icons/mon-app.png").
+      # Local icons + uploads (reference via "icons/my-app.png").
       - ./icons:/app/icons

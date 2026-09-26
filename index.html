@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TileLink</title>
-  <meta name="description" content="TileLink — page de liens self-hosted en tuiles" />
+  <meta name="description" content="TileLink — self-hosted tile links page" />
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236366f1'/%3E%3Ccircle cx='11' cy='11' r='4' fill='white'/%3E%3Ccircle cx='21' cy='11' r='4' fill='white' opacity='.7'/%3E%3Ccircle cx='11' cy='21' r='4' fill='white' opacity='.7'/%3E%3Ccircle cx='21' cy='21' r='4' fill='white'/%3E%3C/svg%3E" />
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -21,11 +21,11 @@
         </div>
       </div>
       <div class="header-actions">
-        <button id="brand-btn" class="theme-toggle" title="Personnalisation (logo, titre)" aria-label="Personnalisation">🎨</button>
-        <button id="user-toggle" class="theme-toggle" title="Préférences d'affichage" aria-label="Préférences d'affichage">⚙</button>
-        <button id="admin-toggle" class="theme-toggle" title="Mode admin (ajout/suppression)" aria-label="Mode admin">🔒</button>
+        <button id="brand-btn" class="theme-toggle" title="Branding (logo, title)" aria-label="Branding">🎨</button>
+        <button id="user-toggle" class="theme-toggle" title="Display preferences" aria-label="Display preferences">⚙</button>
+        <button id="admin-toggle" class="theme-toggle" title="Admin mode (add/remove)" aria-label="Admin mode">🔒</button>
         <button id="lang-toggle" class="theme-toggle" title="Switch to English" aria-label="Langue / Language">EN</button>
-        <button id="theme-toggle" class="theme-toggle" title="Basculer clair / sombre" aria-label="Basculer le thème">☾</button>
+        <button id="theme-toggle" class="theme-toggle" title="Toggle light / dark" aria-label="Toggle theme">☾</button>
       </div>
     </div>
   </header>
@@ -34,15 +34,15 @@
     <div class="toolbar">
       <label class="search-wrap">
         <span class="search-icon" aria-hidden="true">⌕</span>
-        <input id="search" class="search" type="search" placeholder="Rechercher…  ( / )" autocomplete="off" />
+        <input id="search" class="search" type="search" placeholder="Search…  ( / )" autocomplete="off" />
       </label>
       <span id="count" class="count" aria-live="polite"></span>
-      <button id="add-btn" class="add-btn" type="button">＋ Ajouter</button>
+      <button id="add-btn" class="add-btn" type="button">＋ Add</button>
     </div>
-    <div id="chips" class="chips" role="group" aria-label="Filtrer par catégorie"></div>
+    <div id="chips" class="chips" role="group" aria-label="Filter by category"></div>
     <div id="grid" class="grid" aria-live="polite"></div>
-    <p id="empty" class="empty" hidden>Aucun lien configuré. Éditez <code>config.yaml</code> pour ajouter une tuile.</p>
-    <p id="noresults" class="empty" hidden>Aucun résultat. <button id="clear-search" class="link-btn" type="button">Effacer la recherche</button></p>
+    <p id="empty" class="empty" hidden>No links configured. Edit <code>config.yaml</code> to add a tile.</p>
+    <p id="noresults" class="empty" hidden>No results. <button id="clear-search" class="link-btn" type="button">Clear search</button></p>
     <p id="error" class="error" hidden></p>
   </main>
 
@@ -52,13 +52,13 @@
 
   <div id="user-modal" class="modal" hidden>
     <div class="modal-card modal-small" role="dialog" aria-modal="true" aria-labelledby="user-title">
-      <h2 id="user-title">Affichage</h2>
-      <p class="unlock-text">Préférence enregistrée dans ce navigateur uniquement.</p>
+      <h2 id="user-title">Display</h2>
+      <p class="unlock-text">Preference stored in this browser only.</p>
       <div class="radio-row">
-        <label><input type="radio" name="tilesize" value="large" /> Grandes tuiles</label>
-        <label><input type="radio" name="tilesize" value="compact" /> Petites tuiles</label>
+        <label><input type="radio" name="tilesize" value="large" /> Large tiles</label>
+        <label><input type="radio" name="tilesize" value="compact" /> Small tiles</label>
       </div>
-      <p class="hint">En taille réduite, les noms longs passent sur 2 lignes (ex. AdGuard<br />Home).</p>
+      <p class="hint">When small, long names wrap on 2 lines (e.g. AdGuard<br />Home).</p>
       <div class="modal-actions">
         <button id="user-close" class="btn primary" type="button">Fermer</button>
       </div>
@@ -67,28 +67,28 @@
 
   <div id="brand-modal" class="modal" hidden>
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="brand-title">
-      <h2 id="brand-title">Personnalisation</h2>
-      <p class="unlock-text">Visible par toutes les équipes. Champ vide = valeur de <code>config.yaml</code>.</p>
-      <label class="field">Titre
-        <input id="b-title" maxlength="60" placeholder="Ex : Portail Équipe Réseau" />
+      <h2 id="brand-title">Branding</h2>
+      <p class="unlock-text">Visible to all teams. Empty field = <code>config.yaml</code> value.</p>
+      <label class="field">Title
+        <input id="b-title" maxlength="60" placeholder="E.g. Network Team Portal" />
       </label>
-      <label class="field">Sous-titre
-        <input id="b-subtitle" maxlength="120" placeholder="Ex : Production & Recette" />
+      <label class="field">Subtitle
+        <input id="b-subtitle" maxlength="120" placeholder="E.g. Production & Staging" />
       </label>
-      <label class="field">Logo (URL d'image)
-        <input id="b-logo" placeholder="Ex : https://…/logo.png" />
+      <label class="field">Logo (image URL)
+        <input id="b-logo" placeholder="E.g. https://…/logo.png" />
       </label>
-      <label class="field">… ou image à uploader
+      <label class="field">… or upload an image
         <input id="b-logofile" type="file" accept="image/png,image/jpeg,image/webp" />
-        <span class="hint">Redimensionnée en 128×128 dans <code>icons/</code>.</span>
+        <span class="hint">Resized to 128×128 into <code>icons/</code>.</span>
       </label>
       <div class="preview-row">
         <div id="brand-preview" class="tile-icon"></div>
       </div>
       <p id="brand-error" class="error" hidden></p>
       <div class="modal-actions">
-        <button id="brand-cancel" class="btn" type="button">Annuler</button>
-        <button id="brand-save" class="btn primary" type="button">Enregistrer</button>
+        <button id="brand-cancel" class="btn" type="button">Cancel</button>
+        <button id="brand-save" class="btn primary" type="button">Save</button>
       </div>
     </div>
   </div>
@@ -96,43 +96,43 @@
   <div id="unlock" class="modal" hidden>
     <div class="modal-card modal-small" role="dialog" aria-modal="true" aria-labelledby="unlock-title">
       <h2 id="unlock-title">Mode admin</h2>
-      <p class="unlock-text">Mot de passe de l'équipe admin pour afficher l'édition (✎) et la suppression (×).</p>
-      <label class="field">Mot de passe
-        <input id="u-pass" type="password" autocomplete="current-password" placeholder="Mot de passe admin" />
+      <p class="unlock-text">Admin team password to show edit (✎) and delete (×).</p>
+      <label class="field">Password
+        <input id="u-pass" type="password" autocomplete="current-password" placeholder="Admin password" />
       </label>
       <p id="u-error" class="error" hidden></p>
       <div class="modal-actions">
-        <button id="u-cancel" class="btn" type="button">Annuler</button>
-        <button id="u-ok" class="btn primary" type="button">Déverrouiller</button>
+        <button id="u-cancel" class="btn" type="button">Cancel</button>
+        <button id="u-ok" class="btn primary" type="button">Unlock</button>
       </div>
     </div>
   </div>
 
   <div id="modal" class="modal" hidden>
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-      <h2 id="modal-title">Nouvelle tuile</h2>
-      <label id="pass-wrap" class="field" hidden>Mot de passe admin
-        <input id="f-pass" type="password" autocomplete="current-password" placeholder="Mot de passe de l'équipe admin" />
+      <h2 id="modal-title">New tile</h2>
+      <label id="pass-wrap" class="field" hidden>Admin password
+        <input id="f-pass" type="password" autocomplete="current-password" placeholder="Admin team password" />
       </label>
-      <label class="field">Nom *
-        <input id="f-name" maxlength="80" placeholder="Ex : Mon App Recette" />
+      <label class="field">Name *
+        <input id="f-name" maxlength="80" placeholder="E.g. My Staging App" />
       </label>
       <label class="field">URL *
         <input id="f-url" inputmode="url" placeholder="https://…" />
       </label>
-      <label class="field">Icône (slug dashboard-icons ou URL)
-        <input id="f-icon" placeholder="Ex : portainer ou https://…/logo.svg" />
+      <label class="field">Icon (dashboard-icons slug or URL)
+        <input id="f-icon" placeholder="E.g. portainer or https://…/logo.svg" />
       </label>
-      <label class="field">… ou image à uploader
+      <label class="field">… or upload an image
         <input id="f-file" type="file" accept="image/png,image/jpeg,image/webp" />
-        <span class="hint">Redimensionnée automatiquement en 256×256 PNG dans <code>icons/</code>.</span>
+        <span class="hint">Auto-resized to 256×256 PNG into <code>icons/</code>.</span>
       </label>
       <div class="preview-row">
         <div id="icon-preview" class="tile-icon"><span class="tile-fallback">?</span></div>
       </div>
       <div class="field-row">
-        <label class="field">Catégorie
-          <input id="f-cat" list="cat-list" maxlength="40" placeholder="Ex : Conteneurs" />
+        <label class="field">Category
+          <input id="f-cat" list="cat-list" maxlength="40" placeholder="E.g. Containers" />
           <datalist id="cat-list"></datalist>
         </label>
         <label class="field">Env
@@ -146,8 +146,8 @@
       </div>
       <p id="form-error" class="error" hidden></p>
       <div class="modal-actions">
-        <button id="modal-cancel" class="btn" type="button">Annuler</button>
-        <button id="modal-save" class="btn primary" type="button">Enregistrer</button>
+        <button id="modal-cancel" class="btn" type="button">Cancel</button>
+        <button id="modal-save" class="btn primary" type="button">Save</button>
       </div>
     </div>
   </div>

@@ -1,18 +1,18 @@
-/* TileLink backend — zero dépendance (Node stdlib uniquement).
- * - Sert les fichiers statiques (lecture publique pour tous)
- * - API d'écriture réservée aux admins (Bearer ADMIN_TOKEN) :
+/* TileLink backend — zero dependencies (Node stdlib only).
+ * - Serves static files (public read for everyone)
+ * - Write API restricted to admins (Bearer ADMIN_TOKEN):
  *     GET    /api/status          -> { authRequired }
  *     POST   /api/verify  {token} -> { ok }
- *     GET    /api/links           -> { links } (tuiles créées via l'UI)
+ *     GET    /api/links           -> { links } (UI-created tiles)
  *     POST   /api/links    {name, url, icon?, category?, env?} -> { link }
- *     PUT    /api/links/:id       (modification tuile UI)
+ *     PUT    /api/links/:id       (UI tile update)
  *     DELETE /api/links/:id
  *     GET    /api/settings        -> { settings } (branding admin)
- *     PUT    /api/settings {title?, subtitle?, logo?} (vide = repli config.yaml)
+ *     PUT    /api/settings {title?, subtitle?, logo?} (empty = config.yaml fallback)
  *     POST   /api/upload   {filename, dataUrl} -> { path }
- *       dataUrl = PNG 256x256 généré côté navigateur (canvas).
- * - Stockage : custom.json (jamais config.yaml, qui reste éditable à la main)
- *   + icons/ pour les images uploadées.
+ *       dataUrl = 256x256 PNG generated in the browser (canvas).
+ * - Storage: custom.json (never config.yaml, which stays hand-editable)
+ *   + icons/ for uploaded images.
  */
 "use strict";
 
@@ -27,9 +27,9 @@ const PORT = parseInt(process.env.PORT || "3000", 10);
 const TOKEN = process.env.ADMIN_TOKEN || "";
 const DATA_FILE = path.join(ROOT, "custom.json");
 const ICONS_DIR = path.join(ROOT, "icons");
-const BODY_LIMIT = 2 * 1024 * 1024; // 2 Mo (PNG 256px ~= dizaines de Ko)
-const MAX_IMG_BYTES = 1024 * 1024; // 1 Mo
-const MAX_IMG_DIM = 512; // garde-fou (le front envoie 256)
+const BODY_LIMIT = 2 * 1024 * 1024; // 2 MB (256px PNG ~= tens of KB)
+const MAX_IMG_BYTES = 1024 * 1024; // 1 MB
+const MAX_IMG_DIM = 512; // guardrail (frontend sends 256)
 const CDN_SVG = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/";
 const CDN_PNG = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/";
 
@@ -47,7 +47,7 @@ const MIME = {
   ".webp": "image/webp",
   ".ico": "image/x-icon",
 };
-// Fichiers jamais servis (code source, secrets)
+// Files never served (source code, secrets)
 const BLOCKED = new Set(["server.js", "package.json", "package-lock.json", ".env"]);
 
 // ---------- utils ----------
@@ -69,7 +69,7 @@ function readBody(req) {
     req.on("data", (c) => {
       size += c.length;
       if (size > BODY_LIMIT) {
-        reject(new Error("Corps trop volumineux (max 2 Mo)"));
+        reject(new Error("Body too large (max 2 MB)"));
         req.destroy();
         return;
       }
@@ -85,7 +85,7 @@ function bearer(req) {
   return m ? m[1] : "";
 }
 function authorized(req) {
-  if (!TOKEN) return false; // sans token configuré : écriture désactivée
+  if (!TOKEN) return false; // no token configured: writes disabled
   const got = bearer(req);
   if (!got) return false;
   const a = Buffer.from(got);
@@ -105,8 +105,8 @@ function isBareSlug(icon) {
   // slug dashboard-icons (ex: "sftpgo") vs URL directe / fichier local
   return icon && !/^(https?:\/\/|\/|\.\/|icons\/)/i.test(icon);
 }
-// Slug dashboard-icons -> téléchargé et figé dans icons/ (marche même offline ensuite).
-// Si le téléchargement échoue, on garde la référence CDN (résolue à l'affichage).
+// dashboard-icons slug -> downloaded and pinned into icons/ (works offline afterwards).
+// If the download fails, keep the CDN reference (resolved at display time).
 async function resolveIcon(icon) {
   icon = (icon || "").trim();
   if (isBareSlug(icon)) {
@@ -115,8 +115,8 @@ async function resolveIcon(icon) {
   }
   return icon;
 }
-// Met en cache un slug dashboard-icons dans icons/ (svg, sinon png).
-// Retourne "icons/xxx.ext" ou null (on garde alors la référence CDN).
+// Cache a dashboard-icons slug into icons/ (svg, else png).
+// Returns "icons/xxx.ext" or null (then keep the CDN reference).
 async function cacheSlugIcon(slug) {
   const clean = slug.trim().toLowerCase().replace(/\s+/g, "-");
   if (!/^[a-z0-9][a-z0-9-]*$/.test(clean)) return null;
@@ -146,13 +146,13 @@ async function cacheSlugIcon(slug) {
       }
       await fsp.writeFile(path.join(ICONS_DIR, file), buf);
       return "icons/" + file;
-    } catch (e) { /* format suivant / garde la référence CDN */ }
+    } catch (e) { /* next format / keep the CDN reference */ }
   }
   return null;
 }
 
 // ---------- custom.json : { links: [], settings: { title, subtitle, logo } ----------
-// settings = surcharges admin (chaîne vide = repli sur config.yaml)
+// settings = admin overrides (empty string = config.yaml fallback)
 function normSettings(s) {
   const out = {};
   if (s && typeof s === "object") {
@@ -177,10 +177,10 @@ async function loadCustom() {
   }
 }
 async function saveCustom(data) {
-  // backup + écriture atomique (tmp + rename)
+  // backup + atomic write (tmp + rename)
   try {
     await fsp.copyFile(DATA_FILE, DATA_FILE + ".bak");
-  } catch (e) { /* premier enregistrement : rien à sauvegarder */ }
+  } catch (e) { /* first save: nothing to back up */ }
   const content = JSON.stringify(data, null, 2) + "\n";
   const tmp = DATA_FILE + ".tmp";
   try {
@@ -188,7 +188,7 @@ async function saveCustom(data) {
     await fsp.rename(tmp, DATA_FILE);
   } catch (e) {
     if (e.code === "EBUSY" || e.code === "EXDEV" || e.code === "EPERM") {
-      // custom.json bind-monté en volume Docker : rename refusé -> écriture en place
+      // custom.json bind-mounted as a Docker volume: rename refused -> in-place write
       try { await fsp.unlink(tmp); } catch (ee) {}
       await fsp.writeFile(DATA_FILE, content, "utf8");
     } else {
@@ -201,34 +201,34 @@ async function saveCustom(data) {
 function checkLink(b) {
   const name = typeof b.name === "string" ? b.name.trim() : "";
   const url = typeof b.url === "string" ? b.url.trim() : "";
-  if (!name || name.length > 80) return "Nom requis (1-80 caractères)";
-  if (!/^https?:\/\/\S+$/.test(url) || url.length > 500) return "URL invalide (http(s)://… requis)";
+  if (!name || name.length > 80) return "Name required (1-80 characters)";
+  if (!/^https?:\/\/\S+$/.test(url) || url.length > 500) return "Invalid URL (http(s)://… required)";
   const icon = b.icon === undefined || b.icon === null ? "" : String(b.icon).trim();
-  if (icon.length > 500 || icon.includes("..")) return "Icône invalide";
+  if (icon.length > 500 || icon.includes("..")) return "Invalid icon";
   const category = b.category === undefined || b.category === null ? "" : String(b.category).trim();
-  if (category.length > 40) return "Catégorie trop longue (max 40)";
+  if (category.length > 40) return "Category too long (max 40)";
   const env = b.env === undefined || b.env === null ? "" : String(b.env).trim();
-  if (env.length > 20) return "Env trop long (max 20)";
+  if (env.length > 20) return "Env too long (max 20)";
   return null;
 }
 function checkSettings(b) {
-  if (!b || typeof b !== "object") return "Réglages invalides";
+  if (!b || typeof b !== "object") return "Invalid settings";
   for (const k of ["title", "subtitle", "logo"]) {
-    if (b[k] !== undefined && typeof b[k] !== "string") return "Champ " + k + " invalide";
+    if (b[k] !== undefined && typeof b[k] !== "string") return "Invalid " + k + " field";
   }
-  if (b.title && b.title.trim().length > 60) return "Titre trop long (max 60)";
-  if (b.subtitle && b.subtitle.trim().length > 120) return "Sous-titre trop long (max 120)";
-  if (b.logo && (b.logo.trim().length > 500 || b.logo.includes(".."))) return "Logo invalide";
+  if (b.title && b.title.trim().length > 60) return "Title too long (max 60)";
+  if (b.subtitle && b.subtitle.trim().length > 120) return "Subtitle too long (max 120)";
+  if (b.logo && (b.logo.trim().length > 500 || b.logo.includes(".."))) return "Invalid logo";
   return null;
 }
 function checkPng(buf) {
-  // Signature PNG + dimensions lues dans IHDR (sans dépendance)
+  // PNG signature + dimensions read from IHDR (no dependencies)
   const SIG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
-  if (buf.length < 33 || !buf.subarray(0, 8).equals(SIG)) return "Fichier PNG invalide";
+  if (buf.length < 33 || !buf.subarray(0, 8).equals(SIG)) return "Invalid PNG file";
   const w = buf.readUInt32BE(16);
   const h = buf.readUInt32BE(20);
   if (!w || !h || w > MAX_IMG_DIM || h > MAX_IMG_DIM) {
-    return "Dimensions invalides (max " + MAX_IMG_DIM + "x" + MAX_IMG_DIM + "px)";
+    return "Invalid dimensions (max " + MAX_IMG_DIM + "x" + MAX_IMG_DIM + "px)";
   }
   return null;
 }
@@ -240,18 +240,18 @@ async function serveStatic(req, res, urlPath) {
   const safe = path.normalize(rel).replace(/^(\.\.[/\\])+/, "");
   const name = path.basename(safe);
   if (name.startsWith(".") || BLOCKED.has(name)) {
-    send(res, 403, "Accès refusé");
+    send(res, 403, "Forbidden");
     return;
   }
   const file = path.join(ROOT, safe);
   if (!file.startsWith(ROOT)) {
-    send(res, 403, "Accès refusé");
+    send(res, 403, "Forbidden");
     return;
   }
   try {
     const stat = await fsp.stat(file);
     if (stat.isDirectory()) {
-      send(res, 403, "Accès refusé");
+      send(res, 403, "Forbidden");
       return;
     }
     const ext = path.extname(file).toLowerCase();
@@ -263,8 +263,8 @@ async function serveStatic(req, res, urlPath) {
     res.writeHead(200, { ...headers, "Content-Length": data.length });
     res.end(data);
   } catch (e) {
-    if (e.code === "ENOENT") send(res, 404, "Introuvable");
-    else send(res, 500, "Erreur lecture fichier");
+    if (e.code === "ENOENT") send(res, 404, "Not found");
+    else send(res, 500, "File read error");
   }
 }
 
@@ -281,7 +281,7 @@ async function handler(req, res) {
     if (p === "/api/verify" && req.method === "POST") {
       const body = JSON.parse(await readBody(req));
       if (TOKEN && body.token === TOKEN) json(res, 200, { ok: true });
-      else json(res, 401, { ok: false, error: "Mot de passe incorrect" });
+      else json(res, 401, { ok: false, error: "Incorrect password" });
       return;
     }
     if (p === "/api/links" && req.method === "GET") {
@@ -296,7 +296,7 @@ async function handler(req, res) {
     }
     if (p === "/api/settings" && req.method === "PUT") {
       if (!authorized(req)) {
-        json(res, 401, { error: "Non autorisé (token admin requis)" });
+        json(res, 401, { error: "Unauthorized (admin token required)" });
         return;
       }
       const body = JSON.parse(await readBody(req));
@@ -313,7 +313,7 @@ async function handler(req, res) {
     }
     if (p === "/api/links" && req.method === "POST") {
       if (!authorized(req)) {
-        json(res, 401, { error: "Non autorisé (token admin requis)" });
+        json(res, 401, { error: "Unauthorized (admin token required)" });
         return;
       }
       const body = JSON.parse(await readBody(req));
@@ -338,7 +338,7 @@ async function handler(req, res) {
     }
     if (p.startsWith("/api/links/") && req.method === "PUT") {
       if (!authorized(req)) {
-        json(res, 401, { error: "Non autorisé (token admin requis)" });
+        json(res, 401, { error: "Unauthorized (admin token required)" });
         return;
       }
       const id = p.slice("/api/links/".length);
@@ -351,7 +351,7 @@ async function handler(req, res) {
       const data = await loadCustom();
       const idx = data.links.findIndex((l) => l.id === id);
       if (idx === -1) {
-        json(res, 404, { error: "Tuile introuvable" });
+        json(res, 404, { error: "Tile not found" });
         return;
       }
       data.links[idx] = {
@@ -367,7 +367,7 @@ async function handler(req, res) {
       return;
     }
     if (p.startsWith("/api/links/") && req.method === "DELETE") {      if (!authorized(req)) {
-        json(res, 401, { error: "Non autorisé (token admin requis)" });
+        json(res, 401, { error: "Unauthorized (admin token required)" });
         return;
       }
       const id = p.slice("/api/links/".length);
@@ -375,7 +375,7 @@ async function handler(req, res) {
       const before = data.links.length;
       data.links = data.links.filter((l) => l.id !== id);
       if (data.links.length === before) {
-        json(res, 404, { error: "Tuile introuvable" });
+        json(res, 404, { error: "Tile not found" });
         return;
       }
       await saveCustom(data);
@@ -384,18 +384,18 @@ async function handler(req, res) {
     }
     if (p === "/api/upload" && req.method === "POST") {
       if (!authorized(req)) {
-        json(res, 401, { error: "Non autorisé (token admin requis)" });
+        json(res, 401, { error: "Unauthorized (admin token required)" });
         return;
       }
       const body = JSON.parse(await readBody(req));
       const m = typeof body.dataUrl === "string" && body.dataUrl.match(/^data:image\/png;base64,([A-Za-z0-9+/=]+)$/);
       if (!m) {
-        json(res, 400, { error: "Image invalide (PNG base64 attendu — le navigateur convertit déjà en 256px)" });
+        json(res, 400, { error: "Invalid image (PNG base64 expected — the browser already converts to 256px)" });
         return;
       }
       const buf = Buffer.from(m[1], "base64");
       if (buf.length > MAX_IMG_BYTES) {
-        json(res, 400, { error: "Image trop lourde (max 1 Mo)" });
+        json(res, 400, { error: "Image too heavy (max 1 MB)" });
         return;
       }
       const pngErr = checkPng(buf);
@@ -411,7 +411,7 @@ async function handler(req, res) {
         file = base + "-" + i + ".png";
         i++;
         if (i > 100) {
-          json(res, 500, { error: "Trop de fichiers homonymes" });
+          json(res, 500, { error: "Too many same-named files" });
           return;
         }
       }
@@ -420,23 +420,23 @@ async function handler(req, res) {
       return;
     }
     if (p.startsWith("/api/")) {
-      json(res, 404, { error: "Route API inconnue" });
+      json(res, 404, { error: "Unknown API route" });
       return;
     }
     await serveStatic(req, res, p);
   } catch (e) {
-    if (e instanceof SyntaxError) json(res, 400, { error: "JSON invalide" });
-    else if (e.message && e.message.indexOf("Corps trop volumineux") !== -1) {
+    if (e instanceof SyntaxError) json(res, 400, { error: "Invalid JSON" });
+    else if (e.message && e.message.indexOf("Body too large") !== -1) {
       try { json(res, 413, { error: e.message }); } catch (ee) {}
     } else {
       console.error(e);
-      // Message détaillé volontairement (homelab) pour diagnostiquer depuis l'UI/logs
-      try { json(res, 500, { error: "Erreur serveur : " + (e.code || e.message) }); } catch (ee) {}
+      // Detailed message on purpose (homelab) to diagnose from UI/logs
+      try { json(res, 500, { error: "Server error: " + (e.code || e.message) }); } catch (ee) {}
     }
   }
 }
 
 http.createServer(handler).listen(PORT, () => {
-  console.log("TileLink sur :" + PORT + " | écriture admin : " + (TOKEN ? "activée" : "DÉSACTIVÉE (ADMIN_TOKEN non défini)"));
-  if (!TOKEN) console.log("Astuce: définissez ADMIN_TOKEN dans le docker-compose pour activer l'ajout via l'UI.");
+  console.log("TileLink on :" + PORT + " | admin writes: " + (TOKEN ? "enabled" : "DISABLED (ADMIN_TOKEN not set)"));
+  if (!TOKEN) console.log("Hint: set ADMIN_TOKEN in the docker-compose to enable adding via the UI.");
 });
