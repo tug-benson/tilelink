@@ -1,0 +1,21 @@
+services:
+  tilelink:
+    build: .
+    image: tilelink:latest
+    container_name: tilelink
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      # Mot de passe partagé de l'équipe admin (ajout/suppression de tuiles via l'UI).
+      # Lecture publique : les viewers n'en ont pas besoin.
+      # Changez-le ! ex. dans un fichier .env : ADMIN_TOKEN=mot-de-passe-solide
+      - PORT=80
+      - ADMIN_TOKEN=${ADMIN_TOKEN:-changeme}
+    volumes:
+      # Édition manuelle possible (relecture à chaque refresh, no-cache).
+      - ./config.yaml:/app/config.yaml:ro
+      # Tuiles créées via l'UI (écrites par le backend — ne pas mettre :ro).
+      - ./custom.json:/app/custom.json
+      # Icônes locales + uploads (référencez via "icons/mon-app.png").
+      - ./icons:/app/icons

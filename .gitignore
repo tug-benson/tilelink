@@ -1,0 +1,8 @@
+.env
+node_modules/
+custom.json.bak
+# Personal data (never committed — examples are versioned instead):
+config.yaml
+custom.json
+icons/*
+!icons/.gitkeep

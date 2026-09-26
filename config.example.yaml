@@ -1,0 +1,82 @@
+title: "TileLink"
+subtitle: "My homelab"
+theme: "dark"
+
+# ------------------------------------------------------------------
+# Add a tile: copy/paste this block and fill in the fields.
+#   - name:     Label shown under the tile (wraps on 2 lines if long)
+#   - url:      Link opened when the tile is clicked
+#   - icon:     3 options:
+#      1. dashboard-icons slug -> e.g. home-assistant, proxmox, gitea
+#         Catalog: https://dashboardicons.com/icons
+#         The slug is the last part of the icon URL.
+#      2. Full URL            -> e.g. https://example.com/logo.svg
+#      3. Local file          -> e.g. icons/my-app.svg
+#         (drop the file into ./icons/ next to the compose file)
+#   - category: (optional) grouping, e.g. Network, Apps, Storage.
+#         Filter buttons are generated automatically.
+#         Button order = order of appearance in this file.
+#         No category -> grouped under "Others".
+#   - env:      (optional) environment badge shown on the tile,
+#         e.g. prod, staging, dev. Free text, auto color for
+#         prod (green), staging (orange), dev (blue).
+#
+# Multi-instance example (same tool twice):
+#   - name: "Portainer PROD"
+#     url: "https://portainer.home.example.com/"
+#     icon: "portainer"
+#     category: "Containers"
+#     env: "prod"
+#   - name: "Portainer STAGING"
+#     url: "https://portainer-staging.home.example.com/"
+#     icon: "portainer"
+#     category: "Containers"
+#     env: "staging"
+# ------------------------------------------------------------------
+links:
+  - name: "AdGuard Home"
+    url: "https://adguard.home.example.com/"
+    icon: "adguard-home"
+    category: "Network"
+
+  - name: "Nginx Proxy Manager"
+    url: "https://npm.home.example.com/"
+    icon: "nginx-proxy-manager"
+    category: "Network"
+
+  - name: "Uptime Kuma"
+    url: "https://uptime.home.example.com/"
+    icon: "uptime-kuma"
+    category: "Monitoring"
+
+  - name: "Portainer PROD"
+    url: "https://portainer.home.example.com/"
+    icon: "portainer"
+    category: "Containers"
+    env: "prod"
+
+  - name: "Portainer STAGING"
+    url: "https://portainer-staging.home.example.com/"
+    icon: "portainer"
+    category: "Containers"
+    env: "staging"
+
+  - name: "Jellyfin"
+    url: "https://jellyfin.home.example.com/"
+    icon: "jellyfin"
+    category: "Media"
+
+  - name: "Immich"
+    url: "https://immich.home.example.com/"
+    icon: "immich"
+    category: "Media"
+
+  - name: "Paperless"
+    url: "https://paperless.home.example.com/"
+    icon: "paperless-ngx"
+    category: "Apps"
+
+  - name: "Vaultwarden"
+    url: "https://vault.home.example.com/"
+    icon: "vaultwarden"
+    category: "Apps"
