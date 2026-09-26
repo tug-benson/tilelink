@@ -1,5 +1,7 @@
 # TileLink
 
+![TileLink preview](preview.png)
+
 Self-hosted **tile dashboard** (MyApps / Okta style). A lightweight, grid-based
 alternative to link pages — with **tile management right in the UI** (admin team).
 
