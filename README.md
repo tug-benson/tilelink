@@ -2,7 +2,7 @@
 
 ![TileLink preview](preview.png)
 
-Self-hosted **tile dashboard** (MyApps / Okta style). A lightweight, grid-based
+Self-hosted **tile dashboard** for your homelab. A lightweight, grid-based
 alternative to link pages — with **tile management right in the UI** (admin team).
 
 - Vanilla frontend (zero dependencies), Node backend (stdlib only, no DB).
